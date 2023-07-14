@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package core;
+
+option go_package = "./core;core";
+
+service CoreService {
+  rpc checkStatus (Request) returns (Response) {}
+
+  rpc updateStatus (Request) returns (Response) {}
+
+  rpc checkLimitCounter (Request) returns (Response) {}
+
+  rpc updateLimitCounter (Request) returns (Response) {}
+
+}
+
+message Empty {
+}
+
+message Request {
+  string userId = 1;
+  string email = 2;
+  string status = 3;
+  string loginType = 4;
+}
+
+message Response {
+  string status = 1;
+  int32 counter = 2;
+}

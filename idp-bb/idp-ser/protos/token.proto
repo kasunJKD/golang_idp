@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package token;
+
+option go_package = "./token;token";
+
+import "google/protobuf/wrappers.proto";
+
+service TokenService {
+    rpc newAuthCodeToken (TokenRequest) returns (AuthCodeToken) {}
+    
+    rpc newAuthCodeGrant (TokenRequest) returns (google.protobuf.StringValue) {}
+
+    rpc verifyAuthCodeToken (TokenRequest) returns (google.protobuf.BoolValue) {}
+
+    rpc newAuthCodeRefreshToken (RefreshTokenRequest) returns (AuthCodeToken) {}
+
+    rpc authCodeRefreshTokenExists (RefreshTokenRequest) returns (google.protobuf.BoolValue) {}
+
+    rpc addUserIdAuthCodeFlow (User) returns (google.protobuf.BoolValue) {}
+
+    rpc getUserIdfromAccesstoken (User) returns (google.protobuf.StringValue) {}
+
+    rpc createToken (User) returns (AuthCodeToken) {}
+
+    rpc verifyToken (TokenRequest) returns (AuthCodeToken) {}
+
+    rpc refreshToken (TokenRequest) returns (AuthCodeToken) {}
+
+    rpc revokeToken (TokenRequest) returns (AuthCodeToken) {}
+
+    rpc revokeAll (User) returns (AuthCodeToken) {}
+
+    rpc createResetPasswordToken (User) returns (AuthCodeToken) {}
+}
+
+message Empty {
+}
+
+message TokenRequest {
+    string code = 1;
+    string refreshToken = 2;
+    string redirectURI = 3;
+    string token = 4;
+}
+
+message RefreshTokenRequest {
+    string refreshToken = 1;
+    bool invalidateIfFound = 2;
+}
+
+message AuthCodeToken {
+    string access_token = 1 [json_name = "access_token"];
+    string refresh_token = 2 [json_name = "refresh_token"];
+    int32  expires_in = 3 [json_name = "expires_in"];
+    string userId = 4;
+}
+
+message User {
+    string userId = 1;
+    string accessToken = 2;
+    string refreshToken = 3;
+}

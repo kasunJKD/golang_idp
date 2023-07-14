@@ -1,0 +1,385 @@
+syntax = "proto3";
+
+package login;
+
+option go_package = "./login;login";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+  host: "localhost:48080";
+  info: {
+    title: "test";
+    description: "test";
+    version: "1.0";
+    contact: {
+      name: "membership";
+      url: "membership";
+      email: "membership";
+    }
+  }
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+};
+
+service LoginService {
+    rpc signUp (Request) returns (Response) {
+      option (google.api.http) = {
+        post: "/api/membership/signUp"
+        body: "*"
+      };
+      option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+        description: "signup new p99 account";
+        responses: {
+          key: "200"
+          value: {
+            examples: {
+              key: "application/json"
+              value: "{\"email\": \"tom@gmail.com\", \"password\": \"pass\", \"displayName\": \"Tom\"}"
+            }
+          }
+        }
+      };
+    }
+    
+    rpc passwordSignIn (Request) returns (Response) {
+      option (google.api.http) = {
+        post: "/api/membership/passwordSignIn"
+        body: "*"
+      };
+      option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+        description: "sign in using p99 account";
+        responses: {
+          key: "200"
+          value: {
+            examples: {
+              key: "application/json"
+              value: "{\"email\": \"tom@gmail.com\", \"password\": \"pass\"}"
+            }
+          }
+        }
+      };
+    }
+
+    rpc getClientInfo (ClientReq) returns (ClientRes) {
+      option (google.api.http) = {
+        post: "/api/membership/getClientInfo"
+        body: "*"
+      };
+      option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+        description: "get client info by clientId";
+        responses: {
+          key: "200"
+          value: {
+            examples: {
+              key: "application/json"
+              value: "{\"clientId\": \"1122353183973623331542309\"}"
+            }
+          }
+        }
+      };
+    }
+
+    rpc createOauthClient (ClientReq) returns (ClientRes) {
+      option (google.api.http) = {
+        post: "/api/membership/oauth/client/create"
+        body: "*"
+      };
+      option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+        description: "creat p99 Oauth client";
+        responses: {
+          key: "200"
+          value: {
+            examples: {
+              key: "application/json"
+              value: "{\"clientName\": \"myP99Client\", \"redirectUrl\": \"testRedirectUrl.com/handler\", \"userId\": \"1122353183973623331542304\"}"
+            }
+          }
+        }
+      };
+    }
+
+    rpc validateClientId (ClientReq) returns (google.protobuf.BoolValue) {}
+
+    rpc logout (Request) returns (google.protobuf.BoolValue) {
+      option (google.api.http) = {
+        post: "/api/membership/logout"
+        body: "*"
+      };
+      option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+        description: "logout";
+        responses: {
+          key: "200"
+          value: {
+            examples: {
+              key: "application/json"
+              value: "{}"
+            }
+          }
+        }
+      };
+    }
+
+    rpc changePassword (Passwordreq) returns (Status) {
+      option (google.api.http) = {
+        post: "/api/membership/changepassword"
+        body: "*"
+      };
+      option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+        description: "change account password";
+        responses: {
+          key: "200"
+          value: {
+            examples: {
+              key: "application/json"
+              value: "{\"userId\": \"1122353183973623331542304\", \"oldPassword\": \"pass\", \"newPassword\": \"1234\"}"
+            }
+          }
+        }
+      };
+    }
+
+  rpc getClientsByUserId (ClientReq) returns (GetClientsByUserIdResponse) {
+    option (google.api.http) = {
+      post: "/api/membership/clients"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+      description: "get all clients by userId";
+      responses: {
+        key: "200"
+        value: {
+          examples: {
+            key: "application/json"
+            value: "{\"userId\": \"1122353183973623331542304\"}"
+          }
+        }
+      }
+    };
+  }
+
+  rpc forgotPassword (Request) returns (ForgotPasswordResponse) {
+    option (google.api.http) = {
+      post: "/api/membership/forgotpassword"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+      description: "forgotpassword; request reset password link";
+      responses: {
+        key: "200"
+        value: {
+          examples: {
+            key: "application/json"
+            value: "{\"email\": \"tom@gmail.com\"}"
+          }
+        }
+      }
+    };
+  }
+
+  rpc resetPassword (Request) returns (Status) {
+    option (google.api.http) = {
+      post: "/api/membership/resetpassword"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+      description: "reset password";
+      responses: {
+        key: "200"
+        value: {
+          examples: {
+            key: "application/json"
+            value: "{\"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2NhbElkIjoiOWNkM2ExMDItNjJhZi00NTgzLWFjMmQtZWJiNTY4MjRjNDYxIiwiaXNzIjoiQWxpIiwic3ViIjoiVGVzdCIsImF1ZCI6IlA5OSIsImV4cCI6MTY3Mzg3MDg3MSwiaWF0IjoxNjczODcwNTcxfQ.YRArrhz2xkdiWTPcKlEeFGFRXyr3BpEjtMgXhKSPazk\", \"password\": \"1234\"}"
+          }
+        }
+      }
+    };
+  }
+
+
+  rpc checkotpEnabled (otpRequest) returns (otpResponse) {}
+
+  rpc updateotpStatus (otpRequest) returns (otpResponse) {}
+
+  rpc enableTwoFactorAuthentication (enableTwoFactorAuthenticationRequest) returns (enableTwoFactorAuthenticationResponse) {
+    option (google.api.http) = {
+      post: "/api/membership/enable2fa"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+      description: "enable/disable two factor authentication";
+      responses: {
+        key: "200"
+        value: {
+          examples: {
+            key: "application/json"
+            value: "{\"userId\": \"1122353183973623331542304\", \"otpEnabled\": \"1\", \"otpMethod\": \"sms\", \"otpMethodData\": \"01234567\"}"
+          }
+        }
+      }
+    };
+  }
+
+  rpc otpLogin (OtpLoginRequest) returns (Response) {
+    option (google.api.http) = {
+      post: "/api/membership/otpLogin"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+      description: "2fa sign in with otp when 2fa enabled";
+      responses: {
+        key: "200"
+        value: {
+          examples: {
+            key: "application/json"
+            value: "{\"userId\": \"1122353183973623331542304\", \"otp\": \"123456\"}"
+          }
+        }
+      }
+    };
+  }
+
+  rpc migrateAccount (Request) returns (Response) {}
+
+}
+
+message Empty {
+}
+
+message Request {
+  string userId = 1;
+  string providerId = 2;
+  string accessToken = 3;
+  bool emailVerified = 4;
+  string email = 5;
+  string oauthAccessToken = 6;
+  string firstName = 7;
+  string lastName = 8;
+  string fullName = 9;
+  string displayName = 10;
+  string photoUrl = 11;
+  string expiresIn = 12;
+  string federatedId = 13;
+  string localId = 14;
+  string refreshToken = 15;
+  string password = 16;
+  string gender = 17;
+  string address = 18;
+  int32 age = 19;
+  string experience = 20;
+  int32 playingTime = 21;
+  string preferredPlatforms = 22;
+  string linkedUserId = 23;
+}
+
+message Response {
+  Users users = 1;
+  string oauthAccessToken = 2;
+  string firstName = 3;
+  string lastName = 4;
+  string fullName = 5;
+  string expiresIn = 6;
+  string idpUrl = 7;
+  bool isNewUser = 8;
+  string refreshToken = 9;
+}
+
+message Users {
+  string userId = 1;
+  string email = 2;
+  bool emailVerified = 3;
+  string displayName = 4;
+  LinkedAccounts linkedAccounts = 5;
+  string photoUrl = 6;
+  google.protobuf.Timestamp updatedAt = 7;
+  bool disabled = 8;
+  google.protobuf.Timestamp createdAt = 9;
+  string passwordHash = 10;
+  string gender = 11;
+  string address = 12;
+  int32 age = 13;
+  string experience = 14;
+  int32 playingTime = 15;
+  string preferredPlatforms = 16;
+  int32 otpEnabled = 17;
+  string preferredMethod = 18;
+  string otpCode = 19;
+}
+
+message LinkedAccounts {
+  string providerId = 1;
+  string federatedId = 2;
+  string email = 3;
+}
+
+message ClientReq {
+  string clientId = 1;
+  string clientName = 2;
+  string redirectUrl = 3;
+  string userId = 4;
+  string projectId = 5;
+}
+
+message ClientRes {
+  string clientId = 1;
+  string projectId = 2;
+  string userId = 3;
+  string redirectUrl = 4;
+  google.protobuf.Timestamp createdAt = 5;
+  google.protobuf.Timestamp updatedAt = 6;
+  bool active = 7;
+  string clientName = 8;
+  string clientSecret = 9;
+}
+
+message Passwordreq {
+  string userId = 1;
+  string oldPassword = 2;
+  string newPassword = 3;
+}
+
+message Status {
+  int32 code = 1;
+  string message = 2;
+}
+
+message GetClientsByUserIdResponse {
+  repeated ClientRes clients = 1;
+}
+
+message ForgotPasswordResponse {
+  int32 code = 1;
+  string message = 2;
+  string resetUrl = 3;
+}
+
+message otpRequest {
+  string userId = 1;
+  int32 otpEnabled = 2;
+}
+
+message otpResponse {
+  int32 otpEnabled = 1;
+}
+
+message enableTwoFactorAuthenticationRequest {
+  string userId = 1;
+  int32 otpEnabled = 2;
+  string otpMethod = 3;
+  string service = 4;
+  string otpMethodData = 5;
+}
+
+message enableTwoFactorAuthenticationResponse {
+  string userId = 1;
+}
+
+message OtpLoginRequest {
+  string userId = 1;
+  string otpMethod = 3;
+  int32 otpCode = 2;
+}

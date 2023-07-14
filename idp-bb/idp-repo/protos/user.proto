@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./user;user";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+service UserService {
+  rpc getLinkedAccountInfo (Request) returns (Response) {}
+
+  rpc unlinkAccount (Request) returns (Response) {}
+
+  rpc getUserInfoById (Request) returns (Response) {}
+
+  rpc checkAuthUserExists (Request) returns (google.protobuf.BoolValue) {}
+
+  rpc getAccountInfo (Request) returns (Response) {}
+
+  rpc createNewUser (Request) returns (Response) {}
+
+  rpc setAccountInfo (Request) returns (Response) {}
+
+  rpc checkIdpAccountLinked (Request) returns (google.protobuf.BoolValue) {}
+
+  rpc migrateAccount (Request) returns (Response) {}
+
+}
+
+message Empty {
+}
+
+message Request {
+  string userId = 1;
+  string providerId = 2;
+  string accessToken = 3;
+  bool emailVerified = 4;
+  string email = 5;
+  string oauthAccessToken = 6;
+  string firstName = 7;
+  string lastName = 8;
+  string fullName = 9;
+  string displayName = 10;
+  string photoUrl = 11;
+  string expiresIn = 12;
+  string federatedId = 13;
+  string localId = 14;
+  string refreshToken = 15;
+  string password = 16;
+  string gender = 17;
+  string address = 18;
+  int32 age = 19;
+  string experience = 20;
+  int32 playingTime = 21;
+  string preferredPlatforms = 22;
+  string linkedUserId = 23;
+}
+
+message Response {
+  Users users = 1;
+  string oauthAccessToken = 2;
+  string firstName = 3;
+  string lastName = 4;
+  string fullName = 5;
+  string expiresIn = 6;
+  string idpUrl = 7;
+  bool isNewUser = 8;
+  string refreshToken = 9;
+}
+
+message Users {
+  string userId = 1;
+  string email = 2;
+  bool emailVerified = 3;
+  string displayName = 4;
+  LinkedAccounts linkedAccounts = 5;
+  string photoUrl = 6;
+  google.protobuf.Timestamp updatedAt = 7;
+  bool disabled = 8;
+  google.protobuf.Timestamp createdAt = 9;
+  string passwordHash = 10;
+  string gender = 11;
+  string address = 12;
+  int32 age = 13;
+  string experience = 14;
+  int32 playingTime = 15;
+  string preferredPlatforms = 16;
+  int32 otpEnabled = 17;
+}
+
+message LinkedAccounts {
+  string providerId = 1;
+  string federatedId = 2;
+  string email = 3;
+  string linkedUserId = 4;
+}
+
+message ClientReq {
+  string clientId = 1;
+  string clientName = 2;
+  string redirectUrl = 3;
+  string userId = 4;
+  string projectId = 5;
+}
+
+message ClientRes {
+  string clientId = 1;
+  string projectId = 2;
+  string userId = 3;
+  string redirectUrl = 4;
+  google.protobuf.Timestamp createdAt = 5;
+  google.protobuf.Timestamp updatedAt = 6;
+  bool active = 7;
+}

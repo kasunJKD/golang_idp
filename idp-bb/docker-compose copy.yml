@@ -1,0 +1,187 @@
+version: "3.7"
+
+services:
+  membership-db:
+    image: postgres:13
+    container_name: membership-db
+    ports:
+      - "45432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=9221
+      - POSTGRES_DB=membership
+    volumes:
+      - ./idp-repository/sql/membership_tables_init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - p99-network
+
+  membership-redis:
+    image: redis:latest
+    container_name: membership-redis
+    ports:
+      - "46379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    volumes:
+      - redis-data:/var/lib/redis
+    command: redis-server --requirepass 9221
+    networks:
+      - p99-network
+
+  user-repository:
+    build:
+      context: .
+      dockerfile: ./idp-repository/user-repository/Dockerfile
+    ports:
+      - "81"
+    restart: on-failure
+    environment:
+      - GRPC_PORT=:81
+      - DB_HOST=membership-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=9221
+      - DB_NAME=membership
+      - REDIS_HOST=membership-redis
+      - REDIS_PORT=6379
+      - REDIS_PASS=9221
+      - MODE=debug
+    networks:
+      - p99-network
+
+  token-repository:
+    build:
+      context: .
+      dockerfile: ./idp-repository/token-repository/Dockerfile
+    ports:
+      - "81"
+    restart: on-failure
+    environment:
+      - GRPC_PORT=:81
+      - REDIS_HOST=membership-redis
+      - REDIS_PORT=6379
+      - REDIS_PASS=9221
+      - MODE=debug
+    networks:
+      - p99-network
+
+  login-repository:
+    build:
+      context: .
+      dockerfile: ./idp-repository/login-repository/Dockerfile
+    ports:
+      - "81"
+    restart: on-failure
+    environment:
+      - GRPC_PORT=:81
+      - HOST=localhost
+      - DB_HOST=membership-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=9221
+      - DB_NAME=membership
+      - REDIS_HOST=membership-redis
+      - REDIS_PORT=6379
+      - REDIS_PASS=9221
+      - MODE=debug
+    networks:
+      - p99-network
+
+  login-service:
+    build:
+      context: .
+      args:
+        - ACCESS_TOKEN_USR=${ACCESS_TOKEN_USR}
+        - ACCESS_TOKEN_PWD=${ACCESS_TOKEN_PWD}
+      dockerfile: ./idp-service/login-service/Dockerfile
+    ports:
+      - "81"
+    environment:
+      - GRPC_PORT=:81
+      - REPO_HOST=login-repository
+      - USER_SERVICE=user-service
+      - TOKEN_SERVICE=token-service
+      - OTP_SERVICE=otp-service
+      - MODE=debug
+    restart: on-failure
+    networks:
+      - p99-network
+
+  user-service:
+    build:
+      context: .
+      args:
+        - ACCESS_TOKEN_USR=${ACCESS_TOKEN_USR}
+        - ACCESS_TOKEN_PWD=${ACCESS_TOKEN_PWD}
+      dockerfile: ./idp-service/user-service/Dockerfile
+    ports:
+      - "81"
+    environment:
+      - GRPC_PORT=:81
+      - REPO_HOST=user-repository
+      - TOKEN_SERVICE=token-service
+      - MODE=debug
+    restart: on-failure
+    networks:
+      - p99-network
+
+  token-service:
+    build:
+      context: .
+      args:
+        - ACCESS_TOKEN_USR=${ACCESS_TOKEN_USR}
+        - ACCESS_TOKEN_PWD=${ACCESS_TOKEN_PWD}
+      dockerfile: ./idp-service/token-service/Dockerfile
+    ports:
+      - "81"
+    environment:
+      - GRPC_PORT=:81
+      - REPO_HOST=token-repository
+      - MODE=debug
+    restart: on-failure
+    networks:
+      - p99-network
+
+  gateway:
+    build:
+      context: .
+      args:
+        - ACCESS_TOKEN_USR=${ACCESS_TOKEN_USR}
+        - ACCESS_TOKEN_PWD=${ACCESS_TOKEN_PWD}
+      dockerfile: ./idp-service/gateway/Dockerfile
+    ports:
+      - "48080:80"
+    environment:
+      - HTTP_PORT=:80
+      - GRPC_PORT=:81
+      - HOST=localhost
+      - USER_SERVICE=user-service
+      - TOKEN_SERVICE=token-service
+      - LOGIN_SERVICE=login-service
+      - MODE=debug
+    restart: on-failure
+    networks:
+      - p99-network
+
+  # login-throttles-sub-system:
+  #   build:
+  #     context: .
+  #     dockerfile: ./login-throttles-sub-system/Dockerfile
+  #   ports:
+  #     - "81"
+  #   restart: on-failure
+  #   environment:
+  #     - GRPC_PORT=:81
+  #     - REDIS_HOST=membership-redis
+  #     - REDIS_PORT=:6379
+  #     - PASSWORD=9221
+  #   networks:
+  #     - p99-network
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  p99-network:
+    name: p99-network
